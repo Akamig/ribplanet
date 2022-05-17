@@ -19,7 +19,7 @@ namespace Ribplanet
         {
         }
 
-        private static byte[] getAddress(PublicKey key)
+        public static byte[] getAddress(PublicKey key)
         {
             byte[] hashPayload = key.Format(false).Skip(1).ToArray();
             var output = CalculateHash(hashPayload);
@@ -34,9 +34,8 @@ namespace Ribplanet
             digest.DoFinal(output, 0);
             return output;
         }
-        public Address getAddressString()
+        /*public Address getAddressString()
         {
-            
-        }
+        }*/
     }
 }

@@ -17,12 +17,12 @@ namespace Ribplanet
         public Address RewardBeneficiary { get; }
         public Hash? PreviousHash { get; }
 
-        public Hash hash(Block block)
-        {
-            var serialized = this.bencode()
-            }
-        public BlockSerialization serialize(){}
-        public byte[] bencode(){}
+        //public Hash hash(Block block)
+        //{
+        //    var serialized = this.bencode();
+        //    }
+        //public BlockSerialization serialize(){}
+        //public byte[] bencode(){}
         // public void valideate{}
     }
 }
