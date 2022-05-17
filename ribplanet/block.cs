@@ -1,6 +1,13 @@
 using Ribplanet;
+using Ribplanet.HashCash;
+using Org.BouncyCastle.Crypto;
+
 namespace Ribplanet
 {
+    public class BlockSerialization
+    {
+        public Hash Hash;
+    }
     public sealed class Block
     {
         public int Index { get; }
@@ -10,9 +17,12 @@ namespace Ribplanet
         public Address RewardBeneficiary { get; }
         public Hash? PreviousHash { get; }
 
-        // public Hash hash(){}
-        // public Blockserialization serialize(){}
-        // public bencode(){}
-        // public valideate{}
+        public Hash hash(Block block)
+        {
+            var serialized = this.bencode()
+            }
+        public BlockSerialization serialize(){}
+        public byte[] bencode(){}
+        // public void valideate{}
     }
 }
