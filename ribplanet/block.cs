@@ -1,13 +1,8 @@
 using Ribplanet;
 using Ribplanet.HashCash;
 using Org.BouncyCastle.Crypto;
-
 namespace Ribplanet
 {
-    public class BlockSerialization
-    {
-        public Hash Hash;
-    }
     public sealed class Block
     {
         public int Index { get; }
