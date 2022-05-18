@@ -6,7 +6,7 @@ namespace ribplanet.Tests;
 public class AddressTests
 {
     [Fact]
-    public void TestGetAddressFromPublicKey()
+    public void GetAddressFromPublicKey()
     {
         // Given
         Address actual = Address.getAddress(new PublicKey(
@@ -32,7 +32,7 @@ public class AddressTests
         );
     }
     [Fact]
-    public void TestGetAddressString()
+    public void GetAddressString()
     {
         var expected = "0x0123456789abcdefabcdefabcdefabcdefabcdef";
         Address actual = new Address(new byte[20]
