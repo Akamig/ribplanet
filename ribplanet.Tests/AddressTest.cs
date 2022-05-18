@@ -6,17 +6,17 @@ namespace ribplanet.Tests;
 public class AddressTests
 {
     [Fact]
-    public void getAddress()
+    public void TestGetAddressFromPublicKey()
     {
         // Given
-        var key = new PublicKey(
+        Address actual = Address.getAddress(new PublicKey(
         new byte[]
         {
             0x03, 0x43, 0x8b, 0x93, 0x53, 0x89, 0xa7, 0xeb, 0xf8,
             0x38, 0xb3, 0xae, 0x41, 0x25, 0xbd, 0x28, 0x50, 0x6a,
             0xa2, 0xdd, 0x45, 0x7f, 0x20, 0xaf, 0xc8, 0x43, 0x72,
             0x9d, 0x3e, 0x7d, 0x60, 0xd7, 0x28,
-        });
+        }));
         // When
         var expected = new Address(
             new byte[]
@@ -28,7 +28,20 @@ public class AddressTests
         // Then
         Assert.Equal(
             expected,
-            new Address(key)
+            actual
         );
+    }
+    [Fact]
+    public void TestGetAddressString()
+    {
+        var expected = "0x0123456789abcdefabcdefabcdefabcdefabcdef";
+        Address actual = new Address(new byte[20]
+            {
+                0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0xab,
+                0xcd, 0xef, 0xab, 0xcd, 0xef, 0xab, 0xcd, 0xef, 0xab,
+                0xcd, 0xef,
+            });
+        Assert.Equal(expected, Address.getAddressString(actual));
+
     }
 }
