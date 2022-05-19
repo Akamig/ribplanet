@@ -18,7 +18,8 @@ namespace Ribplanet
         {
         }
 
-        public static Address getAddress(PublicKey key){
+        public static Address GetAddress(PublicKey key)
+        {
             byte[] bytes = DeriveByteArrayfromPublicKey(key);
             return new Address(bytes);
         }
@@ -37,9 +38,9 @@ namespace Ribplanet
             var output = CalculateHash(hashPayload);
             return output.Skip(output.Length - 20).ToArray();
         }
-        public static string getAddressString(Address addr)
+        public string GetAddressString()
         {
-            string s = "0x" + BitConverter.ToString(addr.ByteArray);
+            string s = "0x" + BitConverter.ToString(this.ByteArray);
             return s.Replace("-", string.Empty).ToLower();
         }
 

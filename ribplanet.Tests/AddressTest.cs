@@ -9,7 +9,7 @@ public class AddressTests
     public void GetAddressFromPublicKey()
     {
         // Given
-        Address actual = Address.getAddress(new PublicKey(
+        Address actual = Address.GetAddress(new PublicKey(
         new byte[]
         {
             0x03, 0x43, 0x8b, 0x93, 0x53, 0x89, 0xa7, 0xeb, 0xf8,
@@ -41,7 +41,8 @@ public class AddressTests
                 0xcd, 0xef, 0xab, 0xcd, 0xef, 0xab, 0xcd, 0xef, 0xab,
                 0xcd, 0xef,
             });
-        Assert.Equal(expected, Address.getAddressString(actual));
+        
+        Assert.Equal(expected, actual.GetAddressString());
 
     }
 }
