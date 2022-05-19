@@ -40,41 +40,38 @@ namespace Ribplanet
 
         }
     }
-    public struct Stamp
-    {
-        public byte[] stamp { get; set; }
-        public Stamp(byte[] stamp)
-        {
-            this.stamp = stamp;
-        }
-    }
     public struct Nonce
     {
-        private byte[] nonce;
+        public byte[] nonce;
         public Nonce(byte[] nonce)
         {
             this.nonce = nonce;
         }
-
-        public Nonce Answer(Stamp stamp, int difficulty)
+        public bool Equals(Nonce other) => nonce.SequenceEqual(other.nonce);
+        public override bool Equals(object? obj) => obj is Nonce other && Equals(other);
+        //from libplanet for testing purpose
+    }
+    public delegate byte[] Stamp(Nonce nonce);
+    public static class HashCash
+    {
+        public static (Nonce Nonce, Hash digest) Answer(Stamp stamp, int difficulty)
         {
-            SHA256 hashAlgo = SHA256.Create();
+            var random = new Random();
+            var nonceBytes = new byte[10];
             int counter = 1;
             while (true)
             {
-                int answerBytesLength = 1 + (int)Math.Floor(Math.Log2(counter) / 8);
-                Nonce answer = new Nonce(BitConverter.GetBytes(counter));
-                Hash digest = new Hash(hashAlgo.ComputeHash(stamp(answer.nonce)));
+                random.NextBytes(nonceBytes);
+                Nonce answer = new Nonce(nonceBytes);
+                Hash digest = new Hash(SHA256.HashData(stamp(answer)));
                 if (digest.HasLeadingZerobits(difficulty))
                 {
-                    return answer;
+                    return (answer, digest);
                 }
                 counter += 1;
             }
-
-
         }
+
+
     }
-
-
 }

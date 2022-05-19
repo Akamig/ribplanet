@@ -1,17 +1,19 @@
 using Xunit;
 using Ribplanet;
 using Libplanet.Crypto;
+using System;
+using System.Security.Cryptography;
+
 namespace ribplanet.Tests;
 
 public class HashCashTests
 {
-    public void HasLeadingZeroBitsTest()
+    [Fact]
+    public void AnswerSatisfiesDifficulty(byte[] challenge, int difficulty)
     {
-        bool f(byte[] digest, int bits)
-        {
-            Console.WriteLine($"Expect leading ${bits} zero bits in the {digest} ")
-            Console.WriteLine($"{digest.hex()} = {" ".)}")
-        }
-
+        Nonce nonce = new Nonce()
+        Stamp stamp = challenge. nonce 
+        (Nonce answer, Hash digest) = HashCash.Answer(stamp, difficulty);
+        Console.WriteLine($"{answer}, {digest}");
     }
 }
