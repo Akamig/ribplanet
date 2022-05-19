@@ -5,7 +5,13 @@ namespace ribplanet.Tests;
 
 public class HashCashTests
 {
-    public void answerBytesLengthTest(){
-        Nonce.answer(320);
+    public void HasLeadingZeroBitsTest()
+    {
+        bool f(byte[] digest, int bits)
+        {
+            Console.WriteLine($"Expect leading ${bits} zero bits in the {digest} ")
+            Console.WriteLine($"{digest.hex()} = {" ".)}")
+        }
+
     }
 }
