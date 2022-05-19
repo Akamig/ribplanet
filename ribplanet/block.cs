@@ -1,5 +1,4 @@
 using Ribplanet;
-using Ribplanet.HashCash;
 using Org.BouncyCastle.Crypto;
 namespace Ribplanet
 {
