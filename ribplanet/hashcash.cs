@@ -1,26 +1,40 @@
 using System;
-using Org.BouncyCastle.Crypto.Digests;
-
+using System.Security.Cryptography;
 namespace Ribplanet
 {
     public struct Hash
     {
-        public byte[] hash;
+        private byte[] hash;
+        public Hash(byte[] hash)
+        {
+            this.hash = hash;
+        }
         public bool HasLeadingZerobits(int bits)
         {
-            int leadingBytes = (int) Math.Round(bits / 8d, 1);
+            int leadingBytes = (int)Math.Round(bits / 8d, 1);
             int trailingBits = bits % 8;
-            for(int i = 0; i < leadingBytes; i++){
-                if(this.hash[i] != 0x00){
+            for (int i = 0; i < leadingBytes; i++)
+            {
+                if (this.hash[i] != 0x00)
+                {
                     return false;
                 }
             }
-            if(trailingBits != 0){
-                if(hash.Length <= leadingBytes){
+            if (trailingBits != 0)
+            {
+                if (hash.Length <= leadingBytes)
+                {
                     return false;
                 }
-                Int32 mask = 0b1111_1111 << (8 - trailingBits) & 0xff;
-                return (!(bool)(mask & this.hash[leadingBytes]))
+                int mask = 0b_1111_1111 << (8 - trailingBits) & 0xff;
+                if ((mask & this.hash[leadingBytes]) != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             return true;
 
@@ -36,16 +50,28 @@ namespace Ribplanet
     }
     public struct Nonce
     {
-        public byte[] nonce;
-
-        public Nonce Answer(int difficulty)
+        private byte[] nonce;
+        public Nonce(byte[] nonce)
         {
+            this.nonce = nonce;
+        }
+
+        public Nonce Answer(Stamp stamp, int difficulty)
+        {
+            SHA256 hashAlgo = SHA256.Create();
             int counter = 1;
             while (true)
             {
-                double answerBytesLength = 1 + Math.Floor(Math.Log2(counter) / 8);
+                int answerBytesLength = 1 + (int)Math.Floor(Math.Log2(counter) / 8);
+                Nonce answer = new Nonce(BitConverter.GetBytes(counter));
+                Hash digest = new Hash(hashAlgo.ComputeHash(stamp(answer.nonce)));
+                if (digest.HasLeadingZerobits(difficulty))
+                {
+                    return answer;
+                }
                 counter += 1;
             }
+
 
         }
     }
