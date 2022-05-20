@@ -1,5 +1,4 @@
 using Ribplanet;
-using Org.BouncyCastle.Crypto;
 namespace Ribplanet
 {
     public sealed class Block
@@ -16,7 +15,6 @@ namespace Ribplanet
         //    var serialized = this.bencode();
         //    }
         //public BlockSerialization serialize(){}
-        //public byte[] bencode(){}
         // public void valideate{}
     }
 }
