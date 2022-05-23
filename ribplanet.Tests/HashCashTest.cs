@@ -16,15 +16,14 @@ public class HashCashTests
         {
             byte[] challenge = new byte[40];
             new Random().NextBytes(challenge);
-            int difficulty = 20;
-            Nonce nonce = new Nonce(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0x1a, 0xbc, 0xde, 0xf0, 0x12 });
+            int difficulty = 8;
+            Nonce nonce = new Nonce();
             IEnumerable<byte[]> Stamp(Nonce nonce) => new[] { challenge, nonce.ToByteArray() };
-            (Nonce answer, Hash digest, int count) = HashCash.Answer(Stamp, difficulty);
-            Console.WriteLine($"Total Trial = {count}");
+            (Nonce answer, Hash digest) = HashCash.Answer(Stamp, difficulty);
             Console.WriteLine($"difficulty was {difficulty}, and digest is {ByteArrayToString(digest.hash)}");
             Console.WriteLine($"Challenge was {ByteArrayToString(challenge)}, and nonce is {ByteArrayToString(answer.ToByteArray())}");
+            Assert.True(digest.HasLeadingZerobits(difficulty));
         }
-
     }
 
     private String ByteArrayToString(byte[] arr){
