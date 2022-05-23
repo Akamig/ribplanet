@@ -9,11 +9,12 @@ namespace Ribplanet
         public Nonce Nonce { get; }
         public Address RewardBeneficiary { get; }
         public Hash? PreviousHash { get; }
+        public Transactions[] Transactions;
 
         //public Hash hash(Block block)
         //{
-        //    var serialized = this.bencode();
-        //    }
+        //   var serialized = Bencodex.Codec.Encode(block);
+        //}
         //public BlockSerialization serialize(){}
         // public void valideate{}
     }
