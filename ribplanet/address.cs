@@ -1,7 +1,5 @@
 ﻿using System;
 using Libplanet.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-
 namespace Ribplanet
 {
     public readonly struct Address : IComparable<Address>
