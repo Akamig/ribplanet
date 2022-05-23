@@ -38,14 +38,7 @@ namespace Ribplanet
                     return false;
                 }
                 int mask = 0b_1111_1111 << (8 - trailingBits) & 0xff;
-                if ((mask & this.hash[leadingBytes]) == 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return ((mask & this.hash[leadingBytes]) == 0);
             }
             return true;
 
@@ -80,12 +73,11 @@ namespace Ribplanet
     public delegate IEnumerable<byte[]> Stamp(Nonce nonce);
     public static class HashCash
     {
-        public static (Nonce Nonce, Hash digest, int counter) Answer(Stamp stamp, int difficulty)
+        public static (Nonce Nonce, Hash digest) Answer(Stamp stamp, int difficulty)
         {
             SHA256 algo = SHA256.Create();
             var nonceBytes = new byte[10];
             var random = new Random();
-            int counter = 0;
             while (true)
             {
                 random.NextBytes(nonceBytes);
@@ -103,9 +95,8 @@ namespace Ribplanet
                 var digest = new Hash(algo.Hash);
                 if (digest.HasLeadingZerobits(difficulty))
                 {
-                    return (answer, digest, counter);
+                    return (answer, digest);
                 }
-                counter++;
             }
         }
 
