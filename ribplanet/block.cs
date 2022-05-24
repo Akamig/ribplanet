@@ -3,8 +3,8 @@ using Libplanet.Action;
 using System.Security.Cryptography;
 namespace Ribplanet.Blocks
 {
-    public sealed class Block<T> : IEquatable<Block<T>>
-        where T : IAction, new()
+    public sealed class Block<Arithmetic> : IEquatable<Block<Arithmetic>>
+        where Arithmetic : IAction, new()
     {
 
         public int Index { get; set; }
@@ -12,7 +12,7 @@ namespace Ribplanet.Blocks
         public DateTimeOffset Timestamp { get; set; }
         public Address RewardBeneficiary { get; set; }
         public Hash PreviousHash { get; set; }
-        public Transaction[] Transactions { get; set; }
+        public Transaction<Arithmetic>[] Transactions { get; set; }
         public Nonce Nonce { get; set; }
 
         public Hash Hash { get; set; }
@@ -23,7 +23,7 @@ namespace Ribplanet.Blocks
             DateTimeOffset timestamp,
             Address rewardBeneficiary,
             Hash previousHash,
-            Transaction[] transactions,
+            Transaction<Arithmetic>[] transactions,
             Nonce nonce)
         {
             this.Index = index;
@@ -52,23 +52,23 @@ namespace Ribplanet.Blocks
             return new Bencodex.Codec().Encode(bdict);
         }
 
-        public static Block<T> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, Transaction[] transactions)
+        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, Transaction<Arithmetic>[] transactions)
         {
             Func<Nonce, Hash> stamp = (nonce) =>
             {
-                var block = new Block<T>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
+                var block = new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
                 return block.Hash;
             };
 
             Nonce nonce = HashCash.Answer(stamp, difficulty);
-            return new Block<T>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
+            return new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
         }
 
-        public static bool operator ==(Block<T>? left, Block<T>? right) =>
+        public static bool operator ==(Block<Arithmetic>? left, Block<Arithmetic>? right) =>
         Equals(left, right);
-        public static bool operator !=(Block<T>? left, Block<T>? right) =>
+        public static bool operator !=(Block<Arithmetic>? left, Block<Arithmetic>? right) =>
         !Equals(left, right);
-        public bool Equals(Block<T>? other)
+        public bool Equals(Block<Arithmetic>? other)
         {
             if (other is null)
             {
@@ -80,7 +80,7 @@ namespace Ribplanet.Blocks
         }
 
         public override bool Equals(object? obj) =>
-        obj is Block<T> other && Equals(other);
+        obj is Block<Arithmetic> other && Equals(other);
 
         /// <inheritdoc cref="object.GetHashCode()"/>
         public override int GetHashCode() =>

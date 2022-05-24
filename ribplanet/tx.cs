@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
+
 using Ribplanet;
 using System.Security.Cryptography;
 using Libplanet.Crypto;
 using Libplanet.Action;
+using Libplanet.Tests.Fixtures;
 using Bencodex;
 using Bencodex.Types;
 
 namespace Ribplanet.Tx
 {
-    public sealed class Transaction : IEquatable<Transaction<T>>
-        where T : IAction, new()
+    public sealed class Transaction<Arithmetic> : IEquatable<Transaction<Arithmetic>>
+        where Arithmetic : IAction, new()
     {
 
         public byte[] TxId;
@@ -50,8 +48,8 @@ namespace Ribplanet.Tx
 
             return new Bencodex.Codec().Encode(bdict);
         }
-        public bool Equals(Transaction<T> other) => TxId.Equals(other?.TxId);
-        public override bool Equals(object obj) => obj is Transaction<T> other && Equals(other);
+        public bool Equals(Transaction<Arithmetic> other) => TxId.Equals(other?.TxId);
+        public override bool Equals(object obj) => obj is Transaction<Arithmetic> other && Equals(other);
 
     }
 
