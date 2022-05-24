@@ -1,59 +1,95 @@
-using Ribplanet;
-using Bencodex;
-using Bencodex.Types;
-namespace Ribplanet
+using Ribplanet.Tx;
+using Libplanet.Action;
+using System.Security.Cryptography;
+namespace Ribplanet.Blocks
 {
-    public sealed class Block
+    public sealed class Block<T> : IEquatable<Block<T>>
+        where T : IAction, new()
     {
 
-        public int Index;
-        public int Difficulty;
-        public DateTimeOffset Timestamp;
-        public Nonce Nonce;
-        public Address? RewardBeneficiary;
-        public Hash? PreviousHash;
-        public Transaction[] Transactions;
+        public int Index { get; set; }
+        public int Difficulty { get; set; }
+        public DateTimeOffset Timestamp { get; set; }
+        public Address RewardBeneficiary { get; set; }
+        public Hash PreviousHash { get; set; }
+        public Transaction[] Transactions { get; set; }
+        public Nonce Nonce { get; set; }
 
-        public Dictionary Mine(
-        int Index,
-        int Difficulty,
-        DateTimeOffset Timestamp,
-        Nonce Nonce,
-        Address? RewardBeneficiary,
-        Hash? PreviousHash,
-        Transaction[] Transactions
-        )
+        public Hash Hash { get; set; }
+
+        public Block(
+            int index,
+            int difficulty,
+            DateTimeOffset timestamp,
+            Address rewardBeneficiary,
+            Hash previousHash,
+            Transaction[] transactions,
+            Nonce nonce)
         {
-            new Bencodex.Types.Dictionary(new Dictionary<Bencodex.Types.IKey, Bencodex.Types.IValue>)
+            this.Index = index;
+            this.Difficulty = difficulty;
+            this.Timestamp = timestamp;
+            this.RewardBeneficiary = rewardBeneficiary;
+            this.PreviousHash = previousHash;
+            this.Transactions = transactions;
+            this.Nonce = nonce;
+
+            byte[] payload = Serialize();
+            using SHA256 algo = SHA256.Create();
+            this.Hash = new Hash(algo.ComputeHash(payload));
+        }
+
+        private byte[] Serialize()
+        {
+            var bdict = Bencodex.Types.Dictionary.Empty
+                .Add(nameof(Index), Index)
+                .Add(nameof(Difficulty), Difficulty)
+                .Add(nameof(Timestamp), Timestamp.ToString())
+                .Add(nameof(RewardBeneficiary), RewardBeneficiary.ToString())
+                .Add(nameof(PreviousHash), PreviousHash.hash)
+                .Add(nameof(Nonce), Nonce.nonce);
+
+            return new Bencodex.Codec().Encode(bdict);
+        }
+
+        public static Block<T> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, Transaction[] transactions)
+        {
+            Func<Nonce, Hash> stamp = (nonce) =>
             {
-                
-            }
+                var block = new Block<T>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
+                return block.Hash;
+            };
+
+            Nonce nonce = HashCash.Answer(stamp, difficulty);
+            return new Block<T>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
         }
-        public Block MakeBlock(Nonce nonce)
+
+        public static bool operator ==(Block<T>? left, Block<T>? right) =>
+        Equals(left, right);
+        public static bool operator !=(Block<T>? left, Block<T>? right) =>
+        !Equals(left, right);
+        public bool Equals(Block<T>? other)
         {
+            if (other is null)
+            {
+                return false;
+            }
 
+            return ReferenceEquals(this, other) ||
+                (Hash.Equals(other.Hash));
         }
-        //public BlockSerialization serialize(){}
-        // public void valideate{}
-    }
 
-    public static class BlockMarshaler
-    {
-        private const string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
+        public override bool Equals(object? obj) =>
+        obj is Block<T> other && Equals(other);
 
-        // Header fields:
-        private static readonly byte[] IndexKey = { 0x69 }; // 'i'
-        private static readonly byte[] TimestampKey = { 0x74 }; // 't'
-        private static readonly byte[] DifficultyKey = { 0x64 }; // 'd'
-        private static readonly byte[] NonceKey = { 0x6e }; // 'n'
-        private static readonly byte[] MinerKey = { 0x6d }; // 'm'
-        private static readonly byte[] PublicKeyKey = { 0x50 }; // 'P'
-        private static readonly byte[] PreviousHashKey = { 0x70 }; // 'p'
-        private static readonly byte[] TxHashKey = { 0x78 }; // 'x'
-        private static readonly byte[] HashKey = { 0x68 }; // 'h'
-        private static readonly byte[] StateRootHashKey = { 0x73 }; // 's'
-        private static readonly byte[] SignatureKey = { 0x53 }; // 'S'
-        private static readonly byte[] PreEvaluationHashKey = { 0x63 }; // 'c'
+        /// <inheritdoc cref="object.GetHashCode()"/>
+        public override int GetHashCode() =>
+        unchecked((17 * 31 + Hash.GetHashCode()) * 31);
+
+        /// <inheritdoc cref="object.ToString()"/>
+        public override string ToString() =>
+        Hash.ToString();
+
 
     }
 }
