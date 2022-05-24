@@ -1,6 +1,9 @@
 using System;
+using Ribplanet;
+using Ribplanet.Blocks;
 using Libplanet;
 using System.Security.Cryptography;
+
 namespace Ribplanet
 {
     public struct Hash
@@ -43,6 +46,20 @@ namespace Ribplanet
             return true;
 
         }
+        public static Hash FromString(string hex){
+            var bytes = new byte[hex.Length / 2];
+            for (var i = 0; i < hex.Length / 2; i++)
+            {
+                bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            }
+            return new Hash(bytes);
+        }
+        public override string ToString()
+        {
+            string s = "0x" + BitConverter.ToString(this.hash);
+            return s.Replace("-", string.Empty).ToLower();
+        }
+
     }
     public struct Nonce
     {
@@ -70,36 +87,27 @@ namespace Ribplanet
         public override int GetHashCode() => ByteUtil.CalculateHashCode(ToByteArray());
         public byte[] ToByteArray() => _nonce.ToArray();
     }
-    public delegate IEnumerable<byte[]> Stamp(Nonce nonce);
     public static class HashCash
     {
-        public static (Nonce Nonce, Hash digest) Answer(Stamp stamp, int difficulty)
+        public static Nonce Answer(Func<Nonce, Hash> stamp, int difficulty)
         {
-            SHA256 algo = SHA256.Create();
-            var nonceBytes = new byte[10];
-            var random = new Random();
+            Random random = new Random();
+            byte[] nonceBytes = new byte[32];
             while (true)
             {
                 random.NextBytes(nonceBytes);
-                algo.Initialize();
-                Nonce answer = new Nonce(nonceBytes);
-                IEnumerable<byte[]> chunks = stamp(answer);
+                Nonce nonce = new Nonce(nonceBytes);
+                Hash answer = stamp(nonce);
 
-                //Digest in Hash AlgorithmType.cs
-                foreach (byte[] chunk in chunks)
+                if (answer.HasLeadingZerobits(difficulty))
                 {
-                    algo.TransformBlock(chunk, 0, chunk.Length, null, 0);
+                    return nonce;
                 }
-                algo.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                //ends here
-                var digest = new Hash(algo.Hash);
-                if (digest.HasLeadingZerobits(difficulty))
-                {
-                    return (answer, digest);
-                }
+
+
             }
+
+
         }
-
-
     }
 }
