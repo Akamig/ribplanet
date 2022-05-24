@@ -1,5 +1,6 @@
 ﻿using System;
 using Libplanet.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 namespace Ribplanet
 {
     public readonly struct Address : IComparable<Address>
@@ -36,7 +37,7 @@ namespace Ribplanet
             var output = CalculateHash(hashPayload);
             return output.Skip(output.Length - 20).ToArray();
         }
-        public string GetAddressString()
+        public override string ToString()
         {
             string s = "0x" + BitConverter.ToString(this.ByteArray);
             return s.Replace("-", string.Empty).ToLower();
