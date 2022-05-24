@@ -42,7 +42,7 @@ public class AddressTests
                 0xcd, 0xef,
             });
         
-        Assert.Equal(expected, actual.GetAddressString());
+        Assert.Equal(expected, actual.ToString());
 
     }
 }
