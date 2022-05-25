@@ -18,32 +18,31 @@ namespace Ribplanet.Tx
         public PublicKey PublicKey;
         public byte[] Signature;
         public Address Recipient;
-        public IEnumerable<IAction> Actions;
+        public Arithmetic Action;
         public DateTimeOffset Timestamp;
 
-        public Transaction(byte[] txId, PublicKey publicKey, Address recipient, IEnumerable<IAction> actions)
+        public Transaction(byte[] txId, PublicKey publicKey, Address recipient, Arithmetic action)
         {
             this.Sender = Address.GetAddress(publicKey);
             this.PublicKey = publicKey;
             this.Signature = new byte[] { 0x00 };
             this.Recipient = recipient;
-            this.Actions = actions;
+            this.Action = action;
             this.Timestamp = DateTimeOffset.UtcNow;
-        
+
             byte[] payload = Serialize();
             Console.WriteLine(payload.ToString());
             using SHA256 algo = SHA256.Create();
             this.TxId = algo.ComputeHash(payload);
-    }
+        }
         private byte[] Serialize()
         {
-            
             var bdict = Bencodex.Types.Dictionary.Empty
                 .Add(nameof(Sender), Sender.ToString())
                 .Add(nameof(PublicKey), PublicKey.ToString())
                 .Add(nameof(Signature), Signature)
                 .Add(nameof(Recipient), Recipient.ToString())
-                //actions missing
+                .Add(nameof(Action), Action.PlainValue)
                 .Add(nameof(Timestamp), Timestamp.ToString());
 
             return new Bencodex.Codec().Encode(bdict);
