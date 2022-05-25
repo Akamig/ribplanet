@@ -47,6 +47,7 @@ namespace Ribplanet.Blocks
                 .Add(nameof(Timestamp), Timestamp.ToString())
                 .Add(nameof(RewardBeneficiary), RewardBeneficiary.ToString())
                 .Add(nameof(PreviousHash), PreviousHash.hash)
+               // .Add(nameof(Transactions), Transactions.Select(a=> a.))
                 .Add(nameof(Nonce), Nonce.nonce);
 
             return new Bencodex.Codec().Encode(bdict);
