@@ -63,7 +63,7 @@ namespace Ribplanet
     }
     public struct Nonce
     {
-        public byte[] _nonce;
+        private byte[] _nonce;
         public Nonce(byte[] nonce) => _nonce = nonce;
         public byte[] nonce
         {
