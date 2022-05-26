@@ -9,16 +9,39 @@ using Bencodex.Types;
 
 namespace Ribplanet.Tx
 {
+    [Serializable]
     public sealed class SerializedTx
     {
         public byte[] SerializedTransaction;
-        public byte[] TxId;
+        public Hash TxId;
         public SerializedTx(Transaction<Arithmetic> Tx)
         {
             this.SerializedTransaction = Tx.SerializeSigned();
-            this.TxId = Tx.TxId;
+            this.TxId = new Hash(Tx.TxId);
+        }
+        public SerializedTx(byte[] SerializedTransaction, Hash TxId)
+        {
+            this.SerializedTransaction = SerializedTransaction;
+            this.TxId = TxId;
         }
 
+        public Transaction<Arithmetic> Deserialize(SerializedTx ser)
+        {
+            using SHA256 algo = SHA256.Create();
+            Codec codec = new Codec();
+            if (ser.TxId == new Hash(algo.ComputeHash(ser.SerializedTransaction)))
+            {
+                var dict = (Bencodex.Types.Dictionary)codec.Decode(ser.SerializedTransaction);
+                Transaction<Arithmetic> tx = new Transaction<Arithmetic>(
+
+                )
+
+            }
+            else
+            {
+                throw new InvalidDataException("TX Hash Mismatch.");
+            }
+        }
     }
     public sealed class Transaction<Arithmetic> : IEquatable<Transaction<Arithmetic>>
         where Arithmetic : IAction, new()
@@ -42,10 +65,11 @@ namespace Ribplanet.Tx
             this.TxNonce = txNonce;
 
             this.Signature = privateKey.Sign(SerializeUnsigned());
-
             using SHA256 algo = SHA256.Create();
             this.TxId = algo.ComputeHash(SerializeSigned());
         }
+
+        public 
         public byte[] SerializeUnsigned()
         {
             var bdict = Bencodex.Types.Dictionary.Empty

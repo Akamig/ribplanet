@@ -29,33 +29,27 @@ namespace Ribplanet.Blocks
             if (sBlock.hash == new Hash(algo.ComputeHash(sBlock.Block)))
             {
                 var dict = (Bencodex.Types.Dictionary)codec.Decode(sBlock.Block);
-                var timestamp = dict.GetValue<Text>("Timestamp");
-                var rewardBeneficiary = dict.GetValue<Text>("RewardBeneficiary");
-                
+
                 var memoryStream = new MemoryStream();
-                var binaryTxs = dict.GetValue<Binary>("Transactions");
-                memoryStream.Write(binaryTxs, 0, (int)binaryTxs.EncodingLength);
-                Hashtable txs = (Hashtable)fmt.Deserialize(memoryStream);
-                var structedTxs = new SerializedTx[txs.Count];
+                var binaryTxs = dict.GetValue<Binary>("Transaction").ToByteArray();
 
-                foreach (DictionaryEntry entry in txs)
-                {
-                    structedTxs.Append(new SerializedTx((byte[])entry.Key, new Hash((byte[])entry.Value)));
-                }
-
+                memoryStream.Write(binaryTxs, 0, binaryTxs.Length);
+                memoryStream.Position = 0;
+                var tx = (SerializedTx)fmt.Deserialize(memoryStream);
 
                 Block<Arithmetic> block = new Block<Arithmetic>(
                     dict.GetValue<Integer>("Index"),
                     dict.GetValue<Integer>("Difficulty"),
-                    DateTimeOffset.Parse(timestamp),
-                    Address.FromString(rewardBeneficiary),
+                    DateTimeOffset.Parse(dict.GetValue<Text>("Timestamp")),
+                    Address.FromString(dict.GetValue<Text>("RewardBeneficiary")),
                     new Hash(dict.GetValue<Binary>("PreviousHash")),
-                    structedTxs,
+                    tx,
                     new Nonce(dict.GetValue<Binary>("Nonce"))
                 );
                 return block;
             }
-            else{
+            else
+            {
                 throw new InvalidDataException("Block Hash Mismatch.");
             }
         }
@@ -69,7 +63,7 @@ namespace Ribplanet.Blocks
         public DateTimeOffset Timestamp { get; set; }
         public Address RewardBeneficiary { get; set; }
         public Hash PreviousHash { get; set; }
-        public Hashtable Transactions { get; set; }
+        public SerializedTx Transaction { get; set; }
         public Nonce Nonce { get; set; }
 
         public Hash Hash { get; set; }
@@ -80,21 +74,15 @@ namespace Ribplanet.Blocks
             DateTimeOffset timestamp,
             Address rewardBeneficiary,
             Hash previousHash,
-            SerializedTx[] transactions,
+            SerializedTx transaction,
             Nonce nonce)
         {
-            Hashtable Txs = new Hashtable();
-            foreach (SerializedTx tx in transactions)
-            {
-                Txs.Add(tx.TxId, tx.SerializedTransaction);
-            }
-
             this.Index = index;
             this.Difficulty = difficulty;
             this.Timestamp = timestamp;
             this.RewardBeneficiary = rewardBeneficiary;
             this.PreviousHash = previousHash;
-            this.Transactions = Txs;
+            this.Transaction = transaction;
             this.Nonce = nonce;
 
             byte[] payload = Serialize();
@@ -106,33 +94,33 @@ namespace Ribplanet.Blocks
         {
             BinaryFormatter fmt = new BinaryFormatter();
             MemoryStream ms = new MemoryStream();
-            fmt.Serialize(ms, this.Transactions);
-            ms.Seek(0, SeekOrigin.Begin);
+            fmt.Serialize(ms, this.Transaction);
+            ms.Position = 0;
             byte[] TxByteArray = new byte[ms.Length];
-            ms.Read(TxByteArray, 0, (int)ms.Length);
+            ms.Read(TxByteArray, 0, TxByteArray.Length);
 
             var bdict = Bencodex.Types.Dictionary.Empty
                 .Add(nameof(Index), Index)
                 .Add(nameof(Difficulty), Difficulty)
-                .Add(nameof(Timestamp), Timestamp.ToString())
+                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz"))
                 .Add(nameof(RewardBeneficiary), RewardBeneficiary.ToString())
                 .Add(nameof(PreviousHash), PreviousHash.hash)
-                .Add(nameof(Transactions), TxByteArray)
+                .Add(nameof(Transaction), TxByteArray)
                 .Add(nameof(Nonce), Nonce.nonce);
 
             return new Bencodex.Codec().Encode(bdict);
         }
 
-        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, SerializedTx[] transactions)
+        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, SerializedTx transaction)
         {
             Func<Nonce, Hash> stamp = (nonce) =>
             {
-                var block = new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
+                var block = new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transaction, nonce);
                 return block.Hash;
             };
 
             Nonce nonce = HashCash.Answer(stamp, difficulty);
-            return new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transactions, nonce);
+            return new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transaction, nonce);
         }
 
         public static bool operator ==(Block<Arithmetic>? left, Block<Arithmetic>? right) =>

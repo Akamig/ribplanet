@@ -33,14 +33,14 @@ namespace Libplanet.Tests.Blocks
                     "341e8f360597d5bc45ab96aabc5f1b0608063f30af7bd4153556c9536a07693a"
                 );
             Transaction<Arithmetic> tx = new Transaction<Arithmetic>(key1, new Ribplanet.Address(key2.PublicKey), Arithmetic.Add(1), 1);
-            SerializedTx[] Txs = new SerializedTx[1];
-            Txs[0] = new SerializedTx(tx);
-            Block<Arithmetic> block = Block<Arithmetic>.Mine(0, 7, DateTimeOffset.UtcNow, new Ribplanet.Address(key1), previousHash, Txs);
+            var Tx = new SerializedTx(tx);
+            Block<Arithmetic> block = Block<Arithmetic>.Mine(0, 7, DateTimeOffset.UtcNow, new Ribplanet.Address(key1), previousHash, Tx);
             SerializedBlock sBlock = new SerializedBlock(block);
             Console.WriteLine(sBlock.hash.ToString());
             Console.WriteLine(Encoding.Default.GetString(sBlock.Block));
         }
 
+        [Fact]
         public void DeserializeBlock()
         {
             PrivateKey key1 = PrivateKey.FromString(
@@ -59,9 +59,9 @@ namespace Libplanet.Tests.Blocks
                     "341e8f360597d5bc45ab96aabc5f1b0608063f30af7bd4153556c9536a07693a"
                 );
             Transaction<Arithmetic> tx = new Transaction<Arithmetic>(key1, new Ribplanet.Address(key2.PublicKey), Arithmetic.Add(1), 1);
-            SerializedTx[] Txs = new SerializedTx[1];
-            Txs[0] = new SerializedTx(tx);
-            Block<Arithmetic> block = Block<Arithmetic>.Mine(0, 7, DateTimeOffset.UtcNow, new Ribplanet.Address(key1), previousHash, Txs);
+            var Tx = new SerializedTx(tx);
+
+            Block<Arithmetic> block = Block<Arithmetic>.Mine(0, 7, DateTimeOffset.UtcNow, new Ribplanet.Address(key1), previousHash, Tx);
             SerializedBlock sBlock = new SerializedBlock(block);
 
             Block<Arithmetic> desBlock = SerializedBlock.Deserialize(sBlock);
@@ -71,9 +71,9 @@ namespace Libplanet.Tests.Blocks
             Assert.Equal(block.Timestamp, desBlock.Timestamp);
             Assert.Equal(block.RewardBeneficiary, desBlock.RewardBeneficiary);
             Assert.Equal(block.PreviousHash, desBlock.PreviousHash);
-            Assert.Equal(block.Transactions, desBlock.Transactions);
-            Assert.Equal(block.Nonce, desBlock.Nonce);
             Assert.Equal(block.Hash, desBlock.Hash);
+            Assert.Equal(block.Nonce, desBlock.Nonce);
+            Assert.Equal(block.Transaction, desBlock.Transaction);
         }
     }
 }

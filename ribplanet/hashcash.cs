@@ -6,7 +6,8 @@ using System.Security.Cryptography;
 
 namespace Ribplanet
 {
-    public struct Hash
+    [Serializable]
+    public struct Hash : IEquatable<Hash>
     {
         private byte[] _hash;
         public Hash(byte[] hash) => _hash = hash;
@@ -46,7 +47,8 @@ namespace Ribplanet
             return true;
 
         }
-        public static Hash FromString(string hex){
+        public static Hash FromString(string hex)
+        {
             var bytes = new byte[hex.Length / 2];
             for (var i = 0; i < hex.Length / 2; i++)
             {
@@ -60,6 +62,20 @@ namespace Ribplanet
             return s.Replace("-", string.Empty).ToLower();
         }
 
+        public static bool operator ==(Hash left, Hash right) => left.Equals(right);
+        public static bool operator !=(Hash left, Hash right) => !left.Equals(right);
+        public bool Equals(Hash other)
+        {
+            for (int i = 0; i < other.hash.Length; i++)
+            {
+                if (!hash[i].Equals(other.hash[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public override bool Equals(object? obj) => obj is Hash other && Equals(other);
     }
     public struct Nonce
     {

@@ -25,7 +25,14 @@ namespace Ribplanet
         }
         public static Address FromString(string str)
         {
-            return new Address(Encoding.ASCII.GetBytes(str.Remove(1)));
+            string strip0x = str.Substring(2);
+            Console.Write(strip0x);
+            byte[] convert = new byte[strip0x.Length / 2];
+            int l = convert.Length;
+            for(int i=0; i<l; i++){
+                convert[i] = Convert.ToByte(strip0x.Substring(i*2, 2), 16);
+            }
+            return new Address(convert);
         }
 
         private static byte[] CalculateHash(byte[] value)
@@ -47,8 +54,6 @@ namespace Ribplanet
             string s = "0x" + BitConverter.ToString(this.ByteArray);
             return s.Replace("-", string.Empty).ToLower();
         }
-
-
         //from libplanet, for xunit Equal implementation
         int IComparable<Address>.CompareTo(Address other)
         {
