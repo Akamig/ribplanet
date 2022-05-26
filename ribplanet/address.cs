@@ -17,23 +17,24 @@ namespace Ribplanet
         public Address(PrivateKey privateKey) : this(DeriveByteArrayfromPublicKey(privateKey.PublicKey))
         {
         }
-
-        public static Address GetAddress(PublicKey key)
-        {
-            byte[] bytes = DeriveByteArrayfromPublicKey(key);
-            return new Address(bytes);
-        }
         public static Address FromString(string str)
         {
             string strip0x = str.Substring(2);
             Console.Write(strip0x);
             byte[] convert = new byte[strip0x.Length / 2];
             int l = convert.Length;
-            for(int i=0; i<l; i++){
-                convert[i] = Convert.ToByte(strip0x.Substring(i*2, 2), 16);
+            for (int i = 0; i < l; i++)
+            {
+                convert[i] = Convert.ToByte(strip0x.Substring(i * 2, 2), 16);
             }
             return new Address(convert);
         }
+        public static Address GetAddress(PublicKey key)
+        {
+            byte[] bytes = DeriveByteArrayfromPublicKey(key);
+            return new Address(bytes);
+        }
+
 
         private static byte[] CalculateHash(byte[] value)
         {
