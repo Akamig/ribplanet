@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Libplanet.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
 namespace Ribplanet
@@ -22,6 +23,10 @@ namespace Ribplanet
             byte[] bytes = DeriveByteArrayfromPublicKey(key);
             return new Address(bytes);
         }
+        public static Address FromString(string str)
+        {
+            return new Address(Encoding.ASCII.GetBytes(str.Remove(1)));
+        }
 
         private static byte[] CalculateHash(byte[] value)
         {
@@ -42,6 +47,7 @@ namespace Ribplanet
             string s = "0x" + BitConverter.ToString(this.ByteArray);
             return s.Replace("-", string.Empty).ToLower();
         }
+
 
         //from libplanet, for xunit Equal implementation
         int IComparable<Address>.CompareTo(Address other)
