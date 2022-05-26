@@ -1,6 +1,7 @@
 
 using System.Text;
 using System.Security.Cryptography;
+using Ribplanet;
 using Libplanet.Crypto;
 using Libplanet.Action;
 using Libplanet.Tests.Fixtures;
@@ -25,17 +26,26 @@ namespace Ribplanet.Tx
             this.TxId = TxId;
         }
 
-        public Transaction<Arithmetic> Deserialize(SerializedTx ser)
+        public static Transaction<Arithmetic> Deserialize(SerializedTx ser)
         {
             using SHA256 algo = SHA256.Create();
             Codec codec = new Codec();
             if (ser.TxId == new Hash(algo.ComputeHash(ser.SerializedTransaction)))
             {
                 var dict = (Bencodex.Types.Dictionary)codec.Decode(ser.SerializedTransaction);
+                Arithmetic action = new Arithmetic();
+                action.LoadPlainValue(dict.GetValue<Dictionary>("Action"));
                 Transaction<Arithmetic> tx = new Transaction<Arithmetic>(
-
-                )
-
+                    Address.FromString(dict.GetValue<Text>("Sender")),
+                    new PublicKey((byte[])dict.GetValue<Binary>("PublicKey")),
+                    (byte[])dict.GetValue<Binary>("Signature"),
+                    Address.FromString(dict.GetValue<Text>("Recipient")),
+                    action,
+                    DateTimeOffset.Parse(dict.GetValue<Text>("Timestamp")),
+                    dict.GetValue<Integer>("TxNonce"),
+                    ser.TxId.hash
+                );
+                return tx;
             }
             else
             {
@@ -47,14 +57,14 @@ namespace Ribplanet.Tx
         where Arithmetic : IAction, new()
     {
 
-        public byte[] TxId;
-        public Address Sender;
-        public PublicKey PublicKey;
-        public byte[] Signature;
-        public Address Recipient;
-        public Arithmetic Action;
-        public DateTimeOffset Timestamp;
-        public long TxNonce;
+        public byte[] TxId { get; set; }
+        public Address Sender { get; set; }
+        public PublicKey PublicKey { get; set; }
+        public byte[] Signature { get; set; }
+        public Address Recipient { get; set; }
+        public Arithmetic Action { get; set; }
+        public DateTimeOffset Timestamp { get; set; }
+        public long TxNonce { get; set; }
         public Transaction(PrivateKey privateKey, Address recipient, Arithmetic action, long txNonce)
         {
             this.Sender = Address.GetAddress(privateKey.PublicKey);
@@ -68,16 +78,26 @@ namespace Ribplanet.Tx
             using SHA256 algo = SHA256.Create();
             this.TxId = algo.ComputeHash(SerializeSigned());
         }
+        public Transaction(Address sender, PublicKey publicKey, byte[] signature, Address recipient, Arithmetic action, DateTimeOffset timestamp, long txNonce, byte[] txid)
+        {
+            this.Sender = sender;
+            this.PublicKey = publicKey;
+            this.Signature = signature;
+            this.Action = action;
+            this.Recipient = recipient;
+            this.Timestamp = timestamp;
+            this.TxNonce = txNonce;
+            this.TxId = txid;
+        }
 
-        public 
         public byte[] SerializeUnsigned()
         {
             var bdict = Bencodex.Types.Dictionary.Empty
                 .Add(nameof(Sender), Sender.ToString())
-                .Add(nameof(PublicKey), PublicKey.ToString())
+                .Add(nameof(PublicKey), PublicKey.Format(false))
                 .Add(nameof(Recipient), Recipient.ToString())
                 .Add(nameof(Action), Action.PlainValue)
-                .Add(nameof(Timestamp), Timestamp.ToString())
+                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz"))
                 .Add(nameof(TxNonce), TxNonce);
 
             return new Bencodex.Codec().Encode(bdict);
@@ -87,34 +107,21 @@ namespace Ribplanet.Tx
         {
             var bdict = Bencodex.Types.Dictionary.Empty
                 .Add(nameof(Sender), Sender.ToString())
-                .Add(nameof(PublicKey), PublicKey.ToString())
+                .Add(nameof(PublicKey), PublicKey.Format(false))
                 .Add(nameof(Recipient), Recipient.ToString())
                 .Add(nameof(Action), Action.PlainValue)
                 .Add(nameof(Timestamp), Timestamp.ToString())
+                .Add(nameof(TxNonce), TxNonce)
                 .Add(nameof(Signature), Signature);
 
             return new Bencodex.Codec().Encode(bdict);
         }
-        /*
-                public static Transaction<Arithmetic> Deserialize(byte[] bytes, bool validate = true){
-                    IValue value = new Codec().Decode(bytes);
-                    if (!(value is Bencodex.Types.Dictionary dict))
-                    {
-                        throw new DecodingException(
-                            $"Expected {typeof(Bencodex.Types.Dictionary)} but " +
-                            $"{value.GetType()}");
-                    }
 
-                    var tx = new Transaction<Arithmetic>(dict);
-                    if (validate)
-                    {
-                        tx.Validate();
-                    }
+        public bool Validate()
+        {
+            return this.PublicKey.Verify(this.SerializeUnsigned(), this.Signature);
+        }
 
-                    return tx;
-                }
-
-        */
         public bool Equals(Transaction<Arithmetic> other) => TxId.Equals(other?.TxId);
         public override bool Equals(object obj) => obj is Transaction<Arithmetic> other && Equals(other);
 

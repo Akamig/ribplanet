@@ -1,7 +1,9 @@
 using Xunit;
 using Xunit.Abstractions;
 using Ribplanet;
+using Ribplanet.Blocks;
 using Ribplanet.Tx;
+using System;
 using System.Text;
 using Libplanet.Tests.Fixtures;
 using Libplanet.Crypto;
@@ -44,6 +46,40 @@ namespace ribplanet.Tests.Tx
                 expected,
                 Encoding.Default.GetString(tx.SerializeSigned())
             );
+        }
+
+        [Fact]
+        public void ValidateOwnTransaction()
+        {
+            PrivateKey key1 = PrivateKey.FromString(
+            "ea0493b0ed67fc97b2e5e85a1d145adea294112f09df15398cb10f2ed5ad1a83"
+            );
+            Hash previousHash = Hash.FromString(
+            "341e8f360597d5bc45ab96aabc5f1b0608063f30af7bd4153556c9536a07693a"
+            );
+            Transaction<Arithmetic> tx = new Transaction<Arithmetic>(key1, new Ribplanet.Address(key1.PublicKey), Arithmetic.Add(1), 1);
+            tx.Validate();
+        }
+
+        [Fact]
+        public void ValidateDeserializedTx()
+        {
+            PrivateKey key1 = PrivateKey.FromString(
+            "ea0493b0ed67fc97b2e5e85a1d145adea294112f09df15398cb10f2ed5ad1a83"
+            );
+            Hash previousHash = Hash.FromString(
+            "341e8f360597d5bc45ab96aabc5f1b0608063f30af7bd4153556c9536a07693a"
+            );
+            Transaction<Arithmetic> tx = new Transaction<Arithmetic>(key1, new Ribplanet.Address(key1.PublicKey), Arithmetic.Add(1), 1);
+
+            var Tx = new SerializedTx(tx);
+
+            Block<Arithmetic> block = Block<Arithmetic>.Mine(0, 7, DateTimeOffset.UtcNow, new Ribplanet.Address(key1), previousHash, Tx);
+            SerializedBlock sBlock = new SerializedBlock(block);
+
+            Block<Arithmetic> desBlock = SerializedBlock.Deserialize(sBlock);
+            Transaction<Arithmetic> desTx = SerializedTx.Deserialize(desBlock.Transaction);
+            Assert.True(desTx.Validate());
         }
     }
 }
