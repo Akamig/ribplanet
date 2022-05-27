@@ -74,7 +74,7 @@ namespace Ribplanet.Blocks
             int difficulty,
             DateTimeOffset timestamp,
             Address rewardBeneficiary,
-            Hash previousHash,
+            Hash? previousHash,
             SerializedTx transaction,
             Nonce nonce)
         {
@@ -112,7 +112,7 @@ namespace Ribplanet.Blocks
             return new Bencodex.Codec().Encode(bdict);
         }
 
-        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash previousHash, SerializedTx transaction)
+        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash? previousHash, SerializedTx transaction)
         {
             Func<Nonce, Hash> stamp = (nonce) =>
             {
