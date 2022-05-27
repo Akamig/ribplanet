@@ -14,7 +14,6 @@ namespace Ribplanet.Blockchain
     {
         internal readonly ReaderWriterLockSlim _rwlock;
         private IDictionary<Hash, Block<Arithmetic>> _blocks;
-
         private Block<Arithmetic> _genesis;
 
         public Block<Arithmetic> this[in Hash blockHash]
@@ -72,6 +71,7 @@ namespace Ribplanet.Blockchain
         {
             Block<Arithmetic> genesisBlock = MakeGenesisBlock();
             this._blocks.Add(genesisBlock.Hash, genesisBlock);
+            this._genesis = genesisBlock;
         };
 
         private Block<Arithmetic> MineBlock(Address rewardBeneficiary)
@@ -83,7 +83,7 @@ namespace Ribplanet.Blockchain
 
         public static ExpectDifficulty()
         {
-            _blocks.Last<>
+            
         };
     }
 }
