@@ -2,6 +2,7 @@ using Ribplanet.Tx;
 using Libplanet.Action;
 using Libplanet.Tests.Fixtures;
 using System.Text;
+using System.Globalization;
 using System.Collections;
 using System.Security.Cryptography;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -102,7 +103,7 @@ namespace Ribplanet.Blocks
             var bdict = Bencodex.Types.Dictionary.Empty
                 .Add(nameof(Index), Index)
                 .Add(nameof(Difficulty), Difficulty)
-                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz"))
+                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz", CultureInfo.InvariantCulture))
                 .Add(nameof(RewardBeneficiary), RewardBeneficiary.ToString())
                 .Add(nameof(PreviousHash), PreviousHash.hash)
                 .Add(nameof(Transaction), TxByteArray)

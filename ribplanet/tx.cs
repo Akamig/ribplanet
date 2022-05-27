@@ -2,6 +2,7 @@
 using System.Text;
 using System.Security.Cryptography;
 using Ribplanet;
+using System.Globalization;
 using Libplanet.Crypto;
 using Libplanet.Action;
 using Libplanet.Tests.Fixtures;
@@ -97,7 +98,7 @@ namespace Ribplanet.Tx
                 .Add(nameof(PublicKey), PublicKey.Format(false))
                 .Add(nameof(Recipient), Recipient.ToString())
                 .Add(nameof(Action), Action.PlainValue)
-                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz"))
+                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz", CultureInfo.InvariantCulture))
                 .Add(nameof(TxNonce), TxNonce);
 
             return new Bencodex.Codec().Encode(bdict);
@@ -110,7 +111,7 @@ namespace Ribplanet.Tx
                 .Add(nameof(PublicKey), PublicKey.Format(false))
                 .Add(nameof(Recipient), Recipient.ToString())
                 .Add(nameof(Action), Action.PlainValue)
-                .Add(nameof(Timestamp), Timestamp.ToString())
+                .Add(nameof(Timestamp), Timestamp.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffzzz", CultureInfo.InvariantCulture))
                 .Add(nameof(TxNonce), TxNonce)
                 .Add(nameof(Signature), Signature);
 
