@@ -8,7 +8,7 @@ using System.Text;
 using Libplanet.Tests.Fixtures;
 using Libplanet.Crypto;
 
-namespace ribplanet.Tests.Tx
+namespace Ribplanet.Tests.Tx
 {
 
     public class TxTest

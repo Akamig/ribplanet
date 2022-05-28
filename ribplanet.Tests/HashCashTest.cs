@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace ribplanet.Tests;
+namespace Ribplanet.Tests;
 
 public class HashCashTests
 {
@@ -27,11 +27,27 @@ public class HashCashTests
             });
             Func<Nonce, Hash> stamp = (nonce) =>
             {
-                var block = new Block<Arithmetic>(0, difficulty, DateTimeOffset.UtcNow, Address.GetAddress(key.PublicKey), Hash.FromString("0"), null, nonce);
+                var block = new Block<Arithmetic>(
+                    0,
+                    difficulty,
+                    DateTimeOffset.UtcNow,
+                    Address.GetAddress(key.PublicKey),
+                    nonce,
+                    Hash.FromString("0"),
+                    null
+                    );
                 return block.Hash;
             };
             Nonce nonce = HashCash.Answer(stamp, difficulty);
-            Block<Arithmetic> block = new Block<Arithmetic>(0, difficulty, DateTimeOffset.UtcNow, Address.GetAddress(key.PublicKey), Hash.FromString("0"), null, nonce);
+            Block<Arithmetic> block = new Block<Arithmetic>(
+            0,
+                    difficulty,
+                    DateTimeOffset.UtcNow,
+                    Address.GetAddress(key.PublicKey),
+                    nonce,
+                    Hash.FromString("0"),
+                    null
+            );
             Console.WriteLine($"difficulty was {difficulty}");
             Console.WriteLine($"{block.Hash.ToString()}");
             Assert.True(block.Hash.HasLeadingZerobits(difficulty));

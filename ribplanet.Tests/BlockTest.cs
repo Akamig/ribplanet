@@ -9,7 +9,8 @@ using Bencodex.Types;
 using Libplanet.Tests.Fixtures;
 using Libplanet.Action;
 using Xunit;
-namespace Libplanet.Tests.Blocks
+
+namespace Ribplanet.Tests.Blocks
 {
 
     public class BlockHash
