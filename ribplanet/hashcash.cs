@@ -15,12 +15,12 @@ namespace Ribplanet
         {
             get
             {
-                if (_hash.Equals(null))
+                if (this._hash.Equals(null))
                 {
-                    _hash = new byte[] { 0x00 };
+                    this._hash = new byte[] { 0x00 };
                 }
 
-                return _hash;
+                return this._hash;
             }
         }
 
