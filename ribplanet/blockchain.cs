@@ -1,5 +1,7 @@
 
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Security.Cryptography;
 using System.Globalization;
 using Ribplanet;
@@ -14,6 +16,8 @@ namespace Ribplanet.Blockchain
     {
         internal readonly ReaderWriterLockSlim _rwlock;
         private IDictionary<Hash, Block<Arithmetic>> _blocks;
+        private SerializedTx _tx;
+        private int difficulty = 20;
         private Block<Arithmetic> _genesis;
 
         public Block<Arithmetic> this[in Hash blockHash]
@@ -48,8 +52,19 @@ namespace Ribplanet.Blockchain
             var timestamp = DateTimeOffset.UtcNow;
             var transaction = new Transaction<Arithmetic>(privateKey, new Address(privateKey), blockAction, 0);
             SerializedTx serTx = new SerializedTx(transaction);
-            Block<Arithmetic> genBlock = Block<Arithmetic>.Mine(0, 20, timestamp, new Address(privateKey), null, serTx);
+            Block<Arithmetic> genBlock = Block<Arithmetic>.Mine(0, 20, timestamp, new Address(privateKey), new Hash(new byte[] { 0x00 }), serTx);
             return genBlock;
+        }
+
+        public string listBlocks()
+        {
+            StringBuilder sb = new StringBuilder();
+            var values = this._blocks.Values;
+            foreach(var value in values){
+                sb.AppendLine($"{values.Count}");
+                sb.AppendLine(JsonSerializer.Serialize(value));
+            }    
+            return sb.ToString();
         }
 
         public bool ContainsBlock(Hash blockHash)
@@ -65,25 +80,59 @@ namespace Ribplanet.Blockchain
             }
         }
 
-
-        private Blockchain(
-        )
+        public void updateTx(SerializedTx tx)
         {
-            Block<Arithmetic> genesisBlock = MakeGenesisBlock();
-            this._blocks.Add(genesisBlock.Hash, genesisBlock);
-            this._genesis = genesisBlock;
-        };
+            this._tx = tx;
+        }
 
-        private Block<Arithmetic> MineBlock(Address rewardBeneficiary)
+
+        public Blockchain()
+        {
+            this._rwlock = new ReaderWriterLockSlim();
+            Block<Arithmetic> genesisBlock = MakeGenesisBlock();
+            this._tx = genesisBlock.Transaction;
+            this._blocks = new Dictionary<Hash, Block<Arithmetic>>();
+            _blocks.Add(genesisBlock.Hash, genesisBlock);
+            this._genesis = genesisBlock;
+        }
+
+        public Block<Arithmetic> MineBlock(Address rewardBeneficiary)
         {
             var index = this._blocks.Count;
             var difficulty = this.ExpectDifficulty();
-            var block = Block<Arithmetic>.Mine(index, difficulty, DateTimeOffset.UtcNow, rewardBeneficiary, this._blocks);
+
+            if (_tx == this._blocks.OrderBy(a => a.Value.Index).Last().Value.Transaction)
+            {
+                _tx = null;
+                // duplicated transaction prevention
+            };
+
+            var nextBlock = Block<Arithmetic>.Mine(index, difficulty, DateTimeOffset.UtcNow, rewardBeneficiary, this._blocks.OrderBy(a => a.Value.Index).Last().Value.Hash, _tx);
+            this._blocks.Add(new KeyValuePair<Hash, Block<Arithmetic>>(nextBlock.Hash, nextBlock));
+            return nextBlock;
         }
 
-        public static ExpectDifficulty()
+        private int ExpectDifficulty()
         {
-            
-        };
+            if (_blocks.Count() < 2)
+            {
+                return this.difficulty;
+            }
+            else
+            {
+                var blocks = this._blocks.OrderBy(a => a.Value.Index).TakeLast(2).ToArray();
+                var timeSpan = blocks[1].Value.Timestamp - blocks[0].Value.Timestamp;
+                if (timeSpan > TimeSpan.FromSeconds(10))
+                {
+                    this.difficulty = difficulty - 1;
+                }
+                else
+                {
+                    this.difficulty = difficulty + 1;
+                }
+                return this.difficulty;
+            }
+
+        }
     }
 }
