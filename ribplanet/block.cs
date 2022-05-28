@@ -43,9 +43,9 @@ namespace Ribplanet.Blocks
                     dict.GetValue<Integer>("Difficulty"),
                     DateTimeOffset.Parse(dict.GetValue<Text>("Timestamp")),
                     Address.FromString(dict.GetValue<Text>("RewardBeneficiary")),
+                    new Nonce(dict.GetValue<Binary>("Nonce")),
                     new Hash(dict.GetValue<Binary>("PreviousHash")),
-                    tx,
-                    new Nonce(dict.GetValue<Binary>("Nonce"))
+                    tx
                 );
                 return block;
             }
@@ -74,9 +74,9 @@ namespace Ribplanet.Blocks
             int difficulty,
             DateTimeOffset timestamp,
             Address rewardBeneficiary,
-            Hash? previousHash,
-            SerializedTx transaction,
-            Nonce nonce)
+            Nonce nonce,
+            Hash previousHash,
+            SerializedTx transaction = null)
         {
             this.Index = index;
             this.Difficulty = difficulty;
@@ -112,16 +112,36 @@ namespace Ribplanet.Blocks
             return new Bencodex.Codec().Encode(bdict);
         }
 
-        public static Block<Arithmetic> Mine(int index, int difficulty, DateTimeOffset timestamp, Address rewardBeneficiary, Hash? previousHash, SerializedTx transaction)
+        public static Block<Arithmetic> Mine(int index,
+        int difficulty,
+        DateTimeOffset timestamp,
+        Address rewardBeneficiary,
+        Hash previousHash,
+        SerializedTx transaction
+        )
         {
             Func<Nonce, Hash> stamp = (nonce) =>
             {
-                var block = new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transaction, nonce);
+                var block = new Block<Arithmetic>(
+                index,
+                difficulty,
+                timestamp,
+                rewardBeneficiary,
+                nonce,
+                previousHash,
+                transaction);
                 return block.Hash;
             };
 
             Nonce nonce = HashCash.Answer(stamp, difficulty);
-            return new Block<Arithmetic>(index, difficulty, timestamp, rewardBeneficiary, previousHash, transaction, nonce);
+            return new Block<Arithmetic>(
+                index,
+                difficulty,
+                timestamp,
+                rewardBeneficiary,
+                nonce,
+                previousHash,
+                transaction);
         }
 
         public static bool operator ==(Block<Arithmetic>? left, Block<Arithmetic>? right) =>
